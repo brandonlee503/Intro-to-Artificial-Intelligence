@@ -220,7 +220,7 @@ def main():
     # Choose data structure based on mode
     if (mode == "bfs") or (mode == "dfs") or (mode == "iddfs"):
         fringe = collections.deque()
-    elif (mode == "a*"):
+    elif (mode == "astar"):
         fringe = PriorityQueue()
     else:
         sys.exit('Selected mode not supported')

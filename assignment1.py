@@ -1,5 +1,6 @@
 import sys
 import collections
+import heapq
 
 # Global Variables
 # TODO: Change these names
@@ -7,7 +8,7 @@ depthLimit        = 0
 nodeCount         = 0
 lastExpansion     = 0
 totalNodesCreated = 0
-supportedModes = ["bfs", "dfs", "iddfs", "a*"]
+supportedModes = ["bfs", "dfs", "iddfs", "astar"]
 
 # Actions a state may take in the form of [missionary, cannibal]
 possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
@@ -15,7 +16,7 @@ possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
 # TODO: Update class
 class Node():
     """An abstract entity representing a single state"""
-    def __init__(self, leftBank, rightBank, depth, pathcost, parent, action):
+    def __init__(self, leftBank, rightBank, depth, cost, parent, action):
         global totalNodesCreated
         totalNodesCreated += 1
         self.leftBank = leftBank
@@ -25,7 +26,7 @@ class Node():
         self.parent = parent
         self.action = action
         self.depth = depth
-        self.pathcost = pathcost
+        self.cost = cost
 
 # TODO: Update class
 class PriorityQueue:
@@ -175,7 +176,7 @@ def breathFirstSearch(fringe, initialState, goalState):
     print "fringe length: {0}".format(len(fringe))
     while True:
         if len(fringe) == 0:
-            sys.exit("No solution found!")
+            sys.exit("No Solution Path Found")
 
         # BFS
         current = fringe.popleft()
@@ -195,7 +196,7 @@ def depthFirstSearch(fringe, initialState, goalState):
     fringe.append(initialState)
     while True:
         if len(fringe) == 0:
-            sys.exit("No solution found!")
+            sys.exit("No Solution Path Found")
 
         # DFS
         current = fringe.pop()
@@ -237,16 +238,56 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
         if not checkClosedList(current, closedList):
             nodeCount += 1
             closedList[current.key] = current.depth
-            # TODO: This represents reference.py correctly, maybe change it?
+            # TODO: This represents reference.py correctly, maybe change it?g
             map(fringe.append, expandNodeIDDFS(current))
 
+def aStarSearch(fringe, initialState, goalState):
+    global nodeCount, lastExpansion, depthLimit, numOfNodesCreated
+    closedList = {}
+    fringe.push(initialState, initialState.cost)
+
+    while True:
+        if len(fringe) == 0:
+            sys.exit("No Solution Path Found")
+
+        # A*
+        current = fringe.pop()
+
+        # Check if we're in the goal state
+        if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
+            return current
+
+        if not checkClosedList(current, closedList):
+            nodeCount += 1
+            closedList[current.key] = current.depth
+            map(lambda i: fringe.push(i, i.cost + aStarHueristic(i, goalState)), expandNode(current))
+# map(lambda x: fringe.push(x, x.cost + getHueristic(x, goalState)), expand(currentNode))
+
+# Find hueristic to add with path cost
+def aStarHueristic(current, goalState):
+    # Check boat bank
+    # TODO CHANGE ME
+    if goalState.rightBank[2] == 1:
+        hueristic = (current.leftBank[0] + current.leftBank[1]) - 1
+    else:
+        hueristic = (current.rightBank[0] + current.rightBank[1]) - 1
+    return hueristic
+
+# # Returns the hueristic to get added to the pathcost
+# def getHueristic(currentNode, goalNode):
+#     # Determine which side the boat is on
+#     if goalNode.rightSide[2] == 1:
+#         retval = (currentNode.leftSide[0] + currentNode.leftSide[1]) - 1
+#     else:
+#         retval = (currentNode.rightSide[0] + currentNode.rightSide[1]) - 1
+#     return retval
 #####
 
 # def uninformedSearch(initialNode, goalNode, fringe):
 #     global nodeCount, lastExpansion, depthLimit, numOfNodesCreated
 #     closedList = {}
 #     if mode == "a*":
-#         fringe.push(initialNode, initialNode.pathcost)
+#         fringe.push(initialNode, initialNode.cost)
 #     else:
 #         fringe.append(initialNode)
 #     while True:
@@ -262,7 +303,7 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
 #                 closedList = {}
 #                 continue
 #             else:
-#                 sys.exit("No solution found!")
+#                 sys.exit("No Solution Path Found")
 #
 #         if mode == "bfs":
 #             currentNode = fringe.popleft()
@@ -278,7 +319,7 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
 #             nodeCount += 1
 #             closedList[currentNode.key] = currentNode.depth
 #             if mode == "a*":
-#                 map(lambda x: fringe.push(x, x.pathcost + getHueristic(x, goalState)), expand(currentNode))
+#                 map(lambda x: fringe.push(x, x.cost + getHueristic(x, goalState)), expand(currentNode))
 #             else:
 #                 map(fringe.append, expand(currentNode))
 
@@ -320,10 +361,8 @@ def main():
 
     # Execute based on mode
     if mode in supportedModes:
-        if mode == "a*":
-            # TODO: Change datastructure if possible
-            fringe = PriorityQueue()
         if mode == "bfs":
+            # TODO: Change datastructure if possible
             fringe = collections.deque()
             resultState = breathFirstSearch(fringe, initialState, goalState)
         if mode == "dfs":
@@ -332,6 +371,10 @@ def main():
         if mode == "iddfs":
             fringe = collections.deque()
             resultState = iterativeDeepeningDFS(fringe, initialState, goalState)
+        if mode == "astar":
+            # TODO: Change datastructure if possible
+            fringe = PriorityQueue()
+            resultState = aStarSearch(fringe, initialState, goalState)
     else:
         sys.exit("Mode not supported!")
 
