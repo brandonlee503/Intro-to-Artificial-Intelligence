@@ -127,7 +127,7 @@ def checkAction(action, node):
     startBank[1] = startBank[1] - action[1]
     endBank[1] = endBank[1] + action[1]
 
-    # TODO: MAYBE ITS THIS? - IT IS THIS
+    # TODO: MAYBE ITS THIS?
     # If there's more cannibals on one side than missionaries, stop.
     # if ((startBank[0] == 0) or (startBank[1] <= startBank[0])) and (endBank[0] == 0 or (endBank[1] <= endBank[0])):
     #     return True
@@ -175,7 +175,6 @@ def breathFirstSearch(fringe, initialState, goalState):
             closedList[current.key] = current.depth
             map(fringe.append, expandNode(current))
 
-# TODO: FIX THIS SINCE ITS NOT FINDING THE MOST BEST PATH
 def depthFirstSearch(fringe, initialState, goalState):
     global nodeCount, lastExpansion, depthLimit, totalNodesCreated
     closedList = {}
@@ -192,11 +191,12 @@ def depthFirstSearch(fringe, initialState, goalState):
             return current
 
         if not checkClosedList(current, closedList):
+            # Find better implementation
             if current.depth > 250:
-                nodeCount += 1
-                closedList[current.key] = current.depth
-            else:
-                map(fringe.append, expandNode(current))
+                continue
+            nodeCount += 1
+            closedList[current.key] = current.depth
+            map(fringe.append, expandNode(current))
 
 #####
 
