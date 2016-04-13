@@ -142,10 +142,16 @@ def successor_fn(node):
 
 # Given an action it applies that action and updates the new states/nodes
 def applyAction(action, node):
-    if node.rightSide[2] == 1:
-        result = Result(list(node.rightSide), list(node.leftSide), action, "left")
-    else:
+    # if node.rightSide[2] == 1:
+    #     result = Result(list(node.rightSide), list(node.leftSide), action, "left")
+    # else:
+    #     result = Result(list(node.leftSide), list(node.rightSide), action, "right")
+    # return result
+
+    if node.leftSide[2] == 1:
         result = Result(list(node.leftSide), list(node.rightSide), action, "right")
+    else:
+        result = Result(list(node.rightSide), list(node.leftSide), action, "left")
     return result
 
 # Check to see if the given action is allowed
@@ -159,8 +165,8 @@ def testAction(action, node):
         endSide = list(node.rightSide)
     # Make perform the action and see results
     startSide[0] = startSide[0] - action[0]
-    startSide[1] = startSide[1] - action[1]
     endSide[0] = endSide[0] + action[0]
+    startSide[1] = startSide[1] - action[1]
     endSide[1] = endSide[1] + action[1]
     # If results cause more cannibals than missionaires, return false
     if (startSide[0] < 0) or (startSide[1] < 0) or (endSide[0] < 0) or (endSide[1] < 0):
@@ -169,6 +175,11 @@ def testAction(action, node):
         return True
     else:
         return False
+    # # If there's more cannibals on one side than missionaries, stop.
+    # if ((startSide[0] == 0) or (startSide[1] <= startSide[0])) and (endSide[0] == 0 or (endSide[1] <= endSide[0])):
+    #     return True
+    # else:
+    #     return False
 
 # Returns the hueristic to get added to the pathcost
 def getHueristic(currentNode, goalNode):

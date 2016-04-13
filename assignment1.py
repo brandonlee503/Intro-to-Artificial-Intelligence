@@ -6,10 +6,11 @@ depthLimit        = 0
 nodeCount         = 0
 lastExpansion     = 0
 totalNodesCreated = 0
+supportedModes = ["bfs", "dfs", "iddfs", "a*"]
 
 # Actions a state may take in the form of [missionary, cannibal]
 possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
-supportedModes = ["bfs", "dfs", "iddfs", "a*"]
+
 
 # TODO: Update class
 class Node():
@@ -42,14 +43,126 @@ class PriorityQueue:
     def __len__(self):
         return len(self._queue)
 
+# TODO: Update class
+class Result():
+    """An Abstract entity representing a Result"""
+    def __init__(self, startSide, endSide, action, endBoatSide):
+        startSide[0] = startSide[0] - action[0]
+        startSide[1] = startSide[1] - action[1]
+        endSide[0] = endSide[0] + action[0]
+        endSide[1] = endSide[1] + action[1]
+        if endBoatSide == "right":
+            self.rightSide = endSide
+            self.leftSide = startSide
+            self.rightSide[2] = 1
+            self.leftSide[2] = 0
+        else:
+            self.rightSide = startSide
+            self.leftSide = endSide
+            self.rightSide[2] = 0
+            self.leftSide[2] = 1
+        self.action = action
+
 def getFileState(file):
     with open(file) as theFile:
         stateData = theFile.readlines()
     return stateData
 
-def uninformedSearch(initialState, goalState, fringe):
+# Check to see if current node is in the closed list
+# TODO: Find a way to update this
+def checkClosedList(node, closedList):
+    if node.key in closedList:
+        if node.depth >= closedList[node.key]:
+            return True
+    else:
+        return False
+
+# Expand the current node
+def expandNode(node):
+    successorNodes = []
+    for result in checkSuccessors(node):
+        updatedNode = Node(result.leftSide, result.rightSide, node, result.action, node.depth + 1, node.depth + 1)
+        successorNodes.append(updatedNode)
+    return successorNodes
+
+    # successors = []
+    # for result in successor_fn(node):
+    #     newNode = Node(result.leftSide, result.rightSide, node, result.action, node.depth + 1, node.depth + 1)
+    #     successors.append(newNode)
+    # return successors
+
+# Checks all possible successors
+def checkSuccessors(node):
+    global possibleActions
+    #TODO: Update this
+    # if mode == "iddfs":
+    #     if node.depth == depthLimit:
+    #         return []
+    allowedActions = filter(lambda x: checkAction(x, node), possibleActions)
+    results = map(lambda y: executeAction(y, node), allowedActions)
+    return results
+
+# Check if action is valid within game
+def checkAction(action, node):
+    # Check which side boat is
+    if node.leftSide[2] == 1:
+        startSide = list(node.leftSide)
+        endSide = list(node.rightSide)
+    else:
+        startSide = list(node.rightSide)
+        endSide = list(node.leftSide)
+
+    # Perform action and check result
+    startSide[0] = startSide[0] - action[0]
+    endSide[0] = endSide[0] + action[0]
+    startSide[1] = startSide[1] - action[1]
+    endSide[1] = endSide[1] + action[1]
+
+    # If there's more cannibals on one side than missionaries, stop.
+    if ((startSide[0] == 0) or (startSide[1] <= startSide[0])) and (endSide[0] == 0 or (endSide[1] <= endSide[0])):
+        return True
+    else:
+        return False
+
+    # Correct implementation
+    # if (startSide[0] < 0) or (startSide[1] < 0) or (endSide[0] < 0) or (endSide[1] < 0):
+    #     return False
+    # elif ((startSide[0] == 0) or (startSide[0] >= startSide[1])) and (endSide[0] == 0 or (endSide[0] >= endSide[1])):
+    #     return True
+    # else:
+    #     return False
+
+# Perform the action and update state
+def executeAction(action , node):
+    if node.leftSide[2] == 1:
+        result = Result(list(node.leftSide), list(node.rightSide), action, "right")
+    else:
+        result = Result(list(node.rightSide), list(node.leftSide), action, "left")
+
+    return result
+
+# Based off of Graph Search
+def breathFirstSearch(initialState, goalState, fringe):
     global nodeCount, lastExpansion, depthLimit, totalNodesCreated
     closedList = {}
+    # TODO: FIX ME HERE AND CONTINUE WORKING ON BFS
+    fringe.append(initialState)
+    while True:
+        if len(fringe) == 0:
+            sys.exit("No solution found!")
+
+        # BFS
+        currentNode = fringe.popleft()
+
+        # Check if we're in the goal state
+        if (currentNode.leftSide == goalState.leftSide) and (currentNode.rightSide == goalState.rightSide):
+            return currentNode
+
+        if not checkClosedList(currentNode, closedList):
+            nodeCount += 1
+            closedList[currentNode.key] = currentNode.depth
+            map(fringe.append, expandNode(currentNode))
+
 
 def main():
 
@@ -71,13 +184,16 @@ def main():
         if mode == "a*":
             # TODO: Change datastructure if possible
             fringe = PriorityQueue()
+        if mode == "bfs":
+            fringe = collections.deque()
+            resultState = breathFirstSearch(initialState, goalState, fringe)
         else:
             # TODO: Change datastructure if possible
             fringe = collections.deque
     else:
         sys.exit("Mode not supported!")
 
-    resultState = uninformedSearch(initialState, goalState, fringe)
+    #resultState = uninformedSearch(initialState, goalState, fringe)
 
 
 main()
