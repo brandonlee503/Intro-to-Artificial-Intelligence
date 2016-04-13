@@ -33,6 +33,9 @@ class PriorityQueue:
         self._queue = []
         self._index = 0
 
+    def __len__(self):
+        return len(self._queue)
+
     def push(self, item, priority):
         heapq.heappush(self._queue, (priority, self._index, item))
         self._index += 1
@@ -212,9 +215,6 @@ def main():
         if mode == "bfs":
             fringe = collections.deque()
             resultState = breathFirstSearch(initialState, goalState, fringe)
-        else:
-            # TODO: Change datastructure if possible
-            fringe = collections.deque
     else:
         sys.exit("Mode not supported!")
 
