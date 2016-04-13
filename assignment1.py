@@ -2,6 +2,7 @@ import sys
 import collections
 
 # Global Variables
+# TODO: Change these names
 depthLimit        = 0
 nodeCount         = 0
 lastExpansion     = 0
@@ -11,20 +12,20 @@ supportedModes = ["bfs", "dfs", "iddfs", "a*"]
 # Actions a state may take in the form of [missionary, cannibal]
 possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
 
-
 # TODO: Update class
 class Node():
     """An abstract entity representing a single state"""
-    def __init__(self, leftSide, rightSide, parent, action, depth, pathcost):
+    def __init__(self, leftBank, rightBank, depth, pathcost, parent, action):
         global totalNodesCreated
-        self.leftSide = leftSide
-        self.rightSide = rightSide
+        totalNodesCreated += 1
+        self.leftBank = leftBank
+        self.rightBank = rightBank
+        self.key = tuple(self.leftBank + self.rightBank)
+
         self.parent = parent
         self.action = action
         self.depth = depth
         self.pathcost = pathcost
-        self.key = tuple(self.leftSide + self.rightSide)
-        totalNodesCreated += 1
 
 # TODO: Update class
 class PriorityQueue:
@@ -43,27 +44,24 @@ class PriorityQueue:
     def pop(self):
         return heapq.heappop(self._queue)[-1]
 
-    def __len__(self):
-        return len(self._queue)
-
 # TODO: Update class
 class Result():
     """An abstract entity representing a Result"""
-    def __init__(self, startSide, endSide, action, endBoatSide):
-        startSide[0] = startSide[0] - action[0]
-        startSide[1] = startSide[1] - action[1]
-        endSide[0] = endSide[0] + action[0]
-        endSide[1] = endSide[1] + action[1]
-        if endBoatSide == "right":
-            self.rightSide = endSide
-            self.leftSide = startSide
-            self.rightSide[2] = 1
-            self.leftSide[2] = 0
+    def __init__(self, startBank, endBank, action, endBoatSide):
+        startBank[0] = startBank[0] - action[0]
+        endBank[0] = endBank[0] + action[0]
+        startBank[1] = startBank[1] - action[1]
+        endBank[1] = endBank[1] + action[1]
+        if endBoatSide == "left":
+            self.rightBank = startBank
+            self.leftBank = endBank
+            self.rightBank[2] = 0
+            self.leftBank[2] = 1
         else:
-            self.rightSide = startSide
-            self.leftSide = endSide
-            self.rightSide[2] = 0
-            self.leftSide[2] = 1
+            self.rightBank = endBank
+            self.leftBank = startBank
+            self.rightBank[2] = 1
+            self.leftBank[2] = 0
         self.action = action
 
 def getFileState(file):
@@ -84,13 +82,13 @@ def checkClosedList(node, closedList):
 def expandNode(node):
     successorNodes = []
     for result in checkSuccessors(node):
-        updatedNode = Node(result.leftSide, result.rightSide, node, result.action, node.depth + 1, node.depth + 1)
+        updatedNode = Node(result.leftBank, result.rightBank, node.depth + 1, node.depth + 1, node, result.action)
         successorNodes.append(updatedNode)
     return successorNodes
 
     # successors = []
     # for result in successor_fn(node):
-    #     newNode = Node(result.leftSide, result.rightSide, node, result.action, node.depth + 1, node.depth + 1)
+    #     newNode = Node(result.leftBank, result.rightBank, node, result.action, node.depth + 1, node.depth + 1)
     #     successors.append(newNode)
     # return successors
 
@@ -116,44 +114,69 @@ def checkSuccessorsIDDFS(node):
 # Check if action is valid within game
 def checkAction(action, node):
     # Check which side boat is
-    if node.leftSide[2] == 1:
-        startSide = list(node.leftSide)
-        endSide = list(node.rightSide)
+    if node.leftBank[2] == 1:
+        startBank = list(node.leftBank)
+        endBank = list(node.rightBank)
     else:
-        startSide = list(node.rightSide)
-        endSide = list(node.leftSide)
+        startBank = list(node.rightBank)
+        endBank = list(node.leftBank)
 
     # Perform action and check result
-    startSide[0] = startSide[0] - action[0]
-    endSide[0] = endSide[0] + action[0]
-    startSide[1] = startSide[1] - action[1]
-    endSide[1] = endSide[1] + action[1]
+    startBank[0] = startBank[0] - action[0]
+    endBank[0] = endBank[0] + action[0]
+    startBank[1] = startBank[1] - action[1]
+    endBank[1] = endBank[1] + action[1]
 
+    # TODO: MAYBE ITS THIS? - IT IS THIS
     # If there's more cannibals on one side than missionaries, stop.
-    if ((startSide[0] == 0) or (startSide[1] <= startSide[0])) and (endSide[0] == 0 or (endSide[1] <= endSide[0])):
-        return True
-    else:
-        return False
-
-    # Correct implementation
-    # if (startSide[0] < 0) or (startSide[1] < 0) or (endSide[0] < 0) or (endSide[1] < 0):
-    #     return False
-    # elif ((startSide[0] == 0) or (startSide[0] >= startSide[1])) and (endSide[0] == 0 or (endSide[0] >= endSide[1])):
+    # if ((startBank[0] == 0) or (startBank[1] <= startBank[0])) and (endBank[0] == 0 or (endBank[1] <= endBank[0])):
     #     return True
     # else:
     #     return False
 
-# Perform the action and update state
-def executeAction(action , node):
-    if node.leftSide[2] == 1:
-        result = Result(list(node.leftSide), list(node.rightSide), action, "right")
+    # Correct implementation
+    if (startBank[0] < 0) or (startBank[1] < 0) or (endBank[0] < 0) or (endBank[1] < 0):
+        return False
+    elif ((startBank[0] == 0) or (startBank[0] >= startBank[1])) and (endBank[0] == 0 or (endBank[0] >= endBank[1])):
+        return True
     else:
-        result = Result(list(node.rightSide), list(node.leftSide), action, "left")
+        return False
+
+# Perform the action and update state
+def executeAction(action, node):
+    if node.leftBank[2] == 1:
+        result = Result(list(node.leftBank), list(node.rightBank), action, "right")
+    else:
+        result = Result(list(node.rightBank), list(node.leftBank), action, "left")
 
     return result
 
 # Based off of Graph Search
-def breathFirstSearch(initialState, goalState, fringe):
+def breathFirstSearch(fringe, initialState, goalState):
+    # TODO Change these names
+    global nodeCount, lastExpansion, depthLimit, totalNodesCreated
+    closedList = {}
+    fringe.append(initialState)
+    # TODO:
+    print "fringe length: {0}".format(len(fringe))
+    while True:
+        if len(fringe) == 0:
+            sys.exit("No solution found!")
+
+        # BFS
+        current = fringe.popleft()
+
+        # Check if we're in the goal state
+        if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
+            return current
+
+        if not checkClosedList(current, closedList):
+            nodeCount += 1
+            closedList[current.key] = current.depth
+            map(fringe.append, expandNode(current))
+
+# TODO: FIX THIS SINCE ITS NOT FINDING THE MOST BEST PATH
+def depthFirstSearch(fringe, initialState, goalState):
     global nodeCount, lastExpansion, depthLimit, totalNodesCreated
     closedList = {}
     fringe.append(initialState)
@@ -161,18 +184,63 @@ def breathFirstSearch(initialState, goalState, fringe):
         if len(fringe) == 0:
             sys.exit("No solution found!")
 
-        # BFS
-        currentNode = fringe.popleft()
+        # DFS
+        current = fringe.pop()
 
         # Check if we're in the goal state
-        if (currentNode.leftSide == goalState.leftSide) and (currentNode.rightSide == goalState.rightSide):
-            return currentNode
+        if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
+            return current
 
-        if not checkClosedList(currentNode, closedList):
-            nodeCount += 1
-            closedList[currentNode.key] = currentNode.depth
-            map(fringe.append, expandNode(currentNode))
+        if not checkClosedList(current, closedList):
+            if current.depth > 250:
+                nodeCount += 1
+                closedList[current.key] = current.depth
+            else:
+                map(fringe.append, expandNode(current))
 
+#####
+
+# def uninformedSearch(initialNode, goalNode, fringe):
+#     global nodeCount, lastExpansion, depthLimit, numOfNodesCreated
+#     closedList = {}
+#     if mode == "a*":
+#         fringe.push(initialNode, initialNode.pathcost)
+#     else:
+#         fringe.append(initialNode)
+#     while True:
+#         if len(fringe) == 0:
+#             # When in iddfs mode, increment depthLimit and restart search
+#             if mode == "iddfs":
+#                 if depthLimit > 500:
+#                     exit(1)
+#                 lastExpansion = 0
+#                 fringe.append(initialNode)
+#                 depthLimit += 1
+#                 numOfNodesCreated = 0
+#                 closedList = {}
+#                 continue
+#             else:
+#                 sys.exit("No solution found!")
+#
+#         if mode == "bfs":
+#             currentNode = fringe.popleft()
+#         else:
+#             currentNode = fringe.pop()
+#
+#         if goalTest(currentNode, goalNode):
+#             return currentNode
+#
+#         if not inClosedList(currentNode, closedList):
+#             if mode == "dfs" and currentNode.depth >= 500:
+#                 continue
+#             nodeCount += 1
+#             closedList[currentNode.key] = currentNode.depth
+#             if mode == "a*":
+#                 map(lambda x: fringe.push(x, x.pathcost + getHueristic(x, goalState)), expand(currentNode))
+#             else:
+#                 map(fringe.append, expand(currentNode))
+
+##########
 # Trace through parents to find path of solution node
 def findSolutionPath(node):
     pathToSolution = []
@@ -203,9 +271,10 @@ def main():
 
     # File IO
     initialStateData = getFileState(fileInitialState)
-    initialState = Node(map(int, initialStateData[0].strip('\n').split(',')), map(int, initialStateData[1].strip('\n').split(',')), None, None, 0, 0)
+    # TODO: Change
+    initialState = Node(map(int, initialStateData[0].strip('\n').split(',')), map(int, initialStateData[1].strip('\n').split(',')), 0, 0, None, None)
     goalStateData = getFileState(fileGoalState)
-    goalState = Node(map(int, goalStateData[0].strip('\n').split(',')), map(int, goalStateData[1].strip('\n').split(',')), None, None, 0, 0)
+    goalState = Node(map(int, goalStateData[0].strip('\n').split(',')), map(int, goalStateData[1].strip('\n').split(',')), 0, 0, None, None)
 
     # Execute based on mode
     if mode in supportedModes:
@@ -214,7 +283,10 @@ def main():
             fringe = PriorityQueue()
         if mode == "bfs":
             fringe = collections.deque()
-            resultState = breathFirstSearch(initialState, goalState, fringe)
+            resultState = breathFirstSearch(fringe, initialState, goalState)
+        if mode == "dfs":
+            fringe = collections.deque()
+            resultState = depthFirstSearch(fringe, initialState, goalState)
     else:
         sys.exit("Mode not supported!")
 
