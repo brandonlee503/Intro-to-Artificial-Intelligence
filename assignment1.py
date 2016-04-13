@@ -2,16 +2,20 @@ import sys
 import collections
 import heapq
 
+# Rename
+# Add helper functions
+# Restructure (top down and maybe more)
+# Add references
+
 # Global Variables
 # TODO: Change these names
 totalNodesCreated  = 0
 totalExpandedNodes = 0
 maximumDepth       = 0
 
-supportedModes = ["bfs", "dfs", "iddfs", "astar"]
-
 # Actions a state may take in the form of [missionary, cannibal]
 possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
+supportedModes = ["bfs", "dfs", "iddfs", "astar"]
 
 # TODO: Update class
 class Node():
@@ -21,7 +25,7 @@ class Node():
         totalNodesCreated += 1
         self.leftBank = leftBank
         self.rightBank = rightBank
-        self.key = tuple(self.leftBank + self.rightBank)
+        self.state = tuple(self.leftBank + self.rightBank)
 
         self.parent = parent
         self.action = action
@@ -73,8 +77,8 @@ def getFileState(file):
 # Check to see if current node is in the closed list
 # TODO: Find a way to update this
 def checkClosedList(node, closedList):
-    if node.key in closedList:
-        if node.depth >= closedList[node.key]:
+    if node.state in closedList:
+        if node.depth >= closedList[node.state]:
             return True
     else:
         return False
@@ -169,7 +173,7 @@ def breathFirstSearch(fringe, initialState, goalState):
 
         if not checkClosedList(current, closedList):
             totalExpandedNodes += 1
-            closedList[current.key] = current.depth
+            closedList[current.state] = current.depth
             map(fringe.append, expandNode(current))
 
 def depthFirstSearch(fringe, initialState, goalState):
@@ -192,7 +196,7 @@ def depthFirstSearch(fringe, initialState, goalState):
             if current.depth > 250:
                 continue
             totalExpandedNodes += 1
-            closedList[current.key] = current.depth
+            closedList[current.state] = current.depth
             map(fringe.append, expandNode(current))
 
 def iterativeDeepeningDFS(fringe, initialState, goalState):
@@ -218,7 +222,7 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
 
         if not checkClosedList(current, closedList):
             totalExpandedNodes += 1
-            closedList[current.key] = current.depth
+            closedList[current.state] = current.depth
             # TODO: This represents reference.py correctly, maybe change it?
             map(fringe.append, expandNodeIDDFS(current))
 
@@ -240,7 +244,7 @@ def aStarSearch(fringe, initialState, goalState):
 
         if not checkClosedList(current, closedList):
             totalExpandedNodes += 1
-            closedList[current.key] = current.depth
+            closedList[current.state] = current.depth
             map(lambda i: fringe.push(i, i.cost + aStarHueristic(i, goalState)), expandNode(current))
 
 # Find hueristic to add with path cost
