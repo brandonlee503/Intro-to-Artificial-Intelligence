@@ -92,6 +92,20 @@ def expandNode(node):
     #     successors.append(newNode)
     # return successors
 
+# Expand the current node
+def expandNodeIDDFS(node):
+    successorNodes = []
+    for result in checkSuccessorsIDDFS(node):
+        updatedNode = Node(result.leftBank, result.rightBank, node.depth + 1, node.depth + 1, node, result.action)
+        successorNodes.append(updatedNode)
+    return successorNodes
+
+    # successors = []
+    # for result in successor_fn(node):
+    #     newNode = Node(result.leftBank, result.rightBank, node, result.action, node.depth + 1, node.depth + 1)
+    #     successors.append(newNode)
+    # return successors
+
 # Checks all possible successors
 def checkSuccessors(node):
     global possibleActions
@@ -223,8 +237,8 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
         if not checkClosedList(current, closedList):
             nodeCount += 1
             closedList[current.key] = current.depth
-            map(fringe.append, expandNode(current))
-
+            # TODO: This represents reference.py correctly, maybe change it?
+            map(fringe.append, expandNodeIDDFS(current))
 
 #####
 
