@@ -14,7 +14,7 @@ possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
 
 # TODO: Update class
 class Node():
-    """An Abstract entity representing a single state"""
+    """An abstract entity representing a single state"""
     def __init__(self, leftSide, rightSide, parent, action, depth, pathcost):
         global totalNodesCreated
         self.leftSide = leftSide
@@ -28,7 +28,7 @@ class Node():
 
 # TODO: Update class
 class PriorityQueue:
-    """An Abstract entity representing a priority queue"""
+    """An abstract entity representing a priority queue"""
     def __init__(self):
         self._queue = []
         self._index = 0
@@ -45,7 +45,7 @@ class PriorityQueue:
 
 # TODO: Update class
 class Result():
-    """An Abstract entity representing a Result"""
+    """An abstract entity representing a Result"""
     def __init__(self, startSide, endSide, action, endBoatSide):
         startSide[0] = startSide[0] - action[0]
         startSide[1] = startSide[1] - action[1]
@@ -102,6 +102,14 @@ def checkSuccessors(node):
     results = map(lambda y: executeAction(y, node), allowedActions)
     return results
 
+def checkSuccessorsIDDFS(node):
+    global possibleActions
+    if node.depth == depthLimit:
+        return []
+    allowedActions = filter(lambda x: checkAction(x, node), possibleActions)
+    results = map(lambda y: executeAction(y, node), allowedActions)
+    return results
+
 # Check if action is valid within game
 def checkAction(action, node):
     # Check which side boat is
@@ -145,7 +153,6 @@ def executeAction(action , node):
 def breathFirstSearch(initialState, goalState, fringe):
     global nodeCount, lastExpansion, depthLimit, totalNodesCreated
     closedList = {}
-    # TODO: FIX ME HERE AND CONTINUE WORKING ON BFS
     fringe.append(initialState)
     while True:
         if len(fringe) == 0:
@@ -163,6 +170,24 @@ def breathFirstSearch(initialState, goalState, fringe):
             closedList[currentNode.key] = currentNode.depth
             map(fringe.append, expandNode(currentNode))
 
+# Trace through parents to find path of solution node
+def findSolutionPath(node):
+    pathToSolution = []
+    current = node
+    while True:
+        try:
+            if current.parent != None:
+                pathToSolution.append(current.action)
+        except:
+            break
+        current = current.parent
+    return pathToSolution #pathToSolution[::-1]
+
+def printToFile(file, solutionPath):
+    f = open(file, 'w')
+    f.write(str(solutionPath))
+    f.write('\n')
+    f.close()
 
 def main():
 
@@ -193,7 +218,9 @@ def main():
     else:
         sys.exit("Mode not supported!")
 
-    #resultState = uninformedSearch(initialState, goalState, fringe)
-
+    print "Total Expanded Nodes: {0}".format(nodeCount)
+    print "Solution Path Length: {0}".format(len(findSolutionPath(resultState)))
+    print findSolutionPath(resultState)
+    printToFile(fileOutput, findSolutionPath(resultState))
 
 main()
