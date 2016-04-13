@@ -87,12 +87,6 @@ def expandNode(node):
         successorNodes.append(updatedNode)
     return successorNodes
 
-    # successors = []
-    # for result in successor_fn(node):
-    #     newNode = Node(result.leftBank, result.rightBank, node, result.action, node.depth + 1, node.depth + 1)
-    #     successors.append(newNode)
-    # return successors
-
 # Expand the current node
 def expandNodeIDDFS(node):
     successorNodes = []
@@ -101,23 +95,14 @@ def expandNodeIDDFS(node):
         successorNodes.append(updatedNode)
     return successorNodes
 
-    # successors = []
-    # for result in successor_fn(node):
-    #     newNode = Node(result.leftBank, result.rightBank, node, result.action, node.depth + 1, node.depth + 1)
-    #     successors.append(newNode)
-    # return successors
-
 # Checks all possible successors
 def checkSuccessors(node):
     global possibleActions
-    #TODO: Update this
-    # if mode == "iddfs":
-    #     if node.depth == depthLimit:
-    #         return []
     allowedActions = filter(lambda x: checkAction(x, node), possibleActions)
     results = map(lambda y: executeAction(y, node), allowedActions)
     return results
 
+# Checks all possible successors (IDDFS Version)
 def checkSuccessorsIDDFS(node):
     global possibleActions
     if node.depth == depthLimit:
@@ -142,7 +127,7 @@ def checkAction(action, node):
     startBank[1] = startBank[1] - action[1]
     endBank[1] = endBank[1] + action[1]
 
-    # TODO: MAYBE ITS THIS?
+    # TODO: This messes things up
     # If there's more cannibals on one side than missionaries, stop.
     # if ((startBank[0] == 0) or (startBank[1] <= startBank[0])) and (endBank[0] == 0 or (endBank[1] <= endBank[0])):
     #     return True
@@ -272,58 +257,7 @@ def aStarHueristic(current, goalState):
     else:
         hueristic = (current.rightBank[0] + current.rightBank[1]) - 1
     return hueristic
-
-# # Returns the hueristic to get added to the pathcost
-# def getHueristic(currentNode, goalNode):
-#     # Determine which side the boat is on
-#     if goalNode.rightSide[2] == 1:
-#         retval = (currentNode.leftSide[0] + currentNode.leftSide[1]) - 1
-#     else:
-#         retval = (currentNode.rightSide[0] + currentNode.rightSide[1]) - 1
-#     return retval
-#####
-
-# def uninformedSearch(initialNode, goalNode, fringe):
-#     global nodeCount, lastExpansion, depthLimit, numOfNodesCreated
-#     closedList = {}
-#     if mode == "a*":
-#         fringe.push(initialNode, initialNode.cost)
-#     else:
-#         fringe.append(initialNode)
-#     while True:
-#         if len(fringe) == 0:
-#             # When in iddfs mode, increment depthLimit and restart search
-#             if mode == "iddfs":
-#                 if depthLimit > 500:
-#                     exit(1)
-#                 lastExpansion = 0
-#                 fringe.append(initialNode)
-#                 depthLimit += 1
-#                 numOfNodesCreated = 0
-#                 closedList = {}
-#                 continue
-#             else:
-#                 sys.exit("No Solution Path Found")
-#
-#         if mode == "bfs":
-#             currentNode = fringe.popleft()
-#         else:
-#             currentNode = fringe.pop()
-#
-#         if goalTest(currentNode, goalNode):
-#             return currentNode
-#
-#         if not inClosedList(currentNode, closedList):
-#             if mode == "dfs" and currentNode.depth >= 500:
-#                 continue
-#             nodeCount += 1
-#             closedList[currentNode.key] = currentNode.depth
-#             if mode == "a*":
-#                 map(lambda x: fringe.push(x, x.cost + getHueristic(x, goalState)), expand(currentNode))
-#             else:
-#                 map(fringe.append, expand(currentNode))
-
-##########
+    
 # Trace through parents to find path of solution node
 def findSolutionPath(node):
     pathToSolution = []
