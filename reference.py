@@ -70,7 +70,7 @@ class Result():
 def uninformedSearch(initialNode, goalNode, fringe):
     global nodeCount, lastExpansion, depthLimit, numOfNodesCreated
     closedList = {}
-    if mode == "a*":
+    if mode == "astar":
         fringe.push(initialNode, initialNode.pathcost)
     else:
         fringe.append(initialNode)
@@ -102,7 +102,7 @@ def uninformedSearch(initialNode, goalNode, fringe):
                 continue
             nodeCount += 1
             closedList[currentNode.key] = currentNode.depth
-            if mode == "a*":
+            if mode == "astar":
                 map(lambda x: fringe.push(x, x.pathcost + getHueristic(x, goalState)), expand(currentNode))
             else:
                 map(fringe.append, expand(currentNode))

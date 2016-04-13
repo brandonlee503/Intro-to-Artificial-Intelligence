@@ -4,10 +4,10 @@ import heapq
 
 # Global Variables
 # TODO: Change these names
-depthLimit        = 0
-nodeCount         = 0
-lastExpansion     = 0
-totalNodesCreated = 0
+totalNodesCreated  = 0
+totalExpandedNodes = 0
+maximumDepth       = 0
+
 supportedModes = ["bfs", "dfs", "iddfs", "astar"]
 
 # Actions a state may take in the form of [missionary, cannibal]
@@ -105,7 +105,7 @@ def checkSuccessors(node):
 # Checks all possible successors (IDDFS Version)
 def checkSuccessorsIDDFS(node):
     global possibleActions
-    if node.depth == depthLimit:
+    if node.depth == maximumDepth:
         return []
     allowedActions = filter(lambda x: checkAction(x, node), possibleActions)
     results = map(lambda y: executeAction(y, node), allowedActions)
@@ -153,12 +153,9 @@ def executeAction(action, node):
 
 # Based off of Graph Search
 def breathFirstSearch(fringe, initialState, goalState):
-    # TODO Change these names
-    global nodeCount, lastExpansion, depthLimit, totalNodesCreated
+    global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
     fringe.append(initialState)
-    # TODO:
-    print "fringe length: {0}".format(len(fringe))
     while True:
         if len(fringe) == 0:
             sys.exit("No Solution Path Found")
@@ -171,12 +168,12 @@ def breathFirstSearch(fringe, initialState, goalState):
             return current
 
         if not checkClosedList(current, closedList):
-            nodeCount += 1
+            totalExpandedNodes += 1
             closedList[current.key] = current.depth
             map(fringe.append, expandNode(current))
 
 def depthFirstSearch(fringe, initialState, goalState):
-    global nodeCount, lastExpansion, depthLimit, totalNodesCreated
+    global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
     fringe.append(initialState)
     while True:
@@ -194,21 +191,20 @@ def depthFirstSearch(fringe, initialState, goalState):
             # Find better implementation
             if current.depth > 250:
                 continue
-            nodeCount += 1
+            totalExpandedNodes += 1
             closedList[current.key] = current.depth
             map(fringe.append, expandNode(current))
 
 def iterativeDeepeningDFS(fringe, initialState, goalState):
-    global nodeCount, lastExpansion, depthLimit, totalNodesCreated
+    global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
     fringe.append(initialState)
     while True:
         if len(fringe) == 0:
-            if depthLimit > 250:
+            if maximumDepth > 250:
                 sys.exit("Depth Limit Reached!")
-            lastExpansion = 0
             fringe.append(initialState)
-            depthLimit += 1
+            maximumDepth += 1
             totalNodesCreated = 0
             closedList = {}
             continue
@@ -221,13 +217,13 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
             return current
 
         if not checkClosedList(current, closedList):
-            nodeCount += 1
+            totalExpandedNodes += 1
             closedList[current.key] = current.depth
-            # TODO: This represents reference.py correctly, maybe change it?g
+            # TODO: This represents reference.py correctly, maybe change it?
             map(fringe.append, expandNodeIDDFS(current))
 
 def aStarSearch(fringe, initialState, goalState):
-    global nodeCount, lastExpansion, depthLimit, numOfNodesCreated
+    global totalExpandedNodes, maximumDepth, numOfNodesCreated
     closedList = {}
     fringe.push(initialState, initialState.cost)
 
@@ -243,21 +239,19 @@ def aStarSearch(fringe, initialState, goalState):
             return current
 
         if not checkClosedList(current, closedList):
-            nodeCount += 1
+            totalExpandedNodes += 1
             closedList[current.key] = current.depth
             map(lambda i: fringe.push(i, i.cost + aStarHueristic(i, goalState)), expandNode(current))
-# map(lambda x: fringe.push(x, x.cost + getHueristic(x, goalState)), expand(currentNode))
 
 # Find hueristic to add with path cost
 def aStarHueristic(current, goalState):
     # Check boat bank
-    # TODO CHANGE ME
-    if goalState.rightBank[2] == 1:
-        hueristic = (current.leftBank[0] + current.leftBank[1]) - 1
-    else:
+    if goalState.leftBank[2] == 1:
         hueristic = (current.rightBank[0] + current.rightBank[1]) - 1
+    else:
+        hueristic = (current.leftBank[0] + current.leftBank[1]) - 1
     return hueristic
-    
+
 # Trace through parents to find path of solution node
 def findSolutionPath(node):
     pathToSolution = []
@@ -269,7 +263,7 @@ def findSolutionPath(node):
         except:
             break
         current = current.parent
-    return pathToSolution #pathToSolution[::-1]
+    return pathToSolution
 
 def printToFile(file, solutionPath):
     f = open(file, 'w')
@@ -312,7 +306,7 @@ def main():
     else:
         sys.exit("Mode not supported!")
 
-    print "Total Expanded Nodes: {0}".format(nodeCount)
+    print "Total Expanded Nodes: {0}".format(totalExpandedNodes)
     print "Solution Path Length: {0}".format(len(findSolutionPath(resultState)))
     print findSolutionPath(resultState)
     printToFile(fileOutput, findSolutionPath(resultState))
