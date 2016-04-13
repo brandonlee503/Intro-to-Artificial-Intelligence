@@ -198,6 +198,34 @@ def depthFirstSearch(fringe, initialState, goalState):
             closedList[current.key] = current.depth
             map(fringe.append, expandNode(current))
 
+def iterativeDeepeningDFS(fringe, initialState, goalState):
+    global nodeCount, lastExpansion, depthLimit, totalNodesCreated
+    closedList = {}
+    fringe.append(initialState)
+    while True:
+        if len(fringe) == 0:
+            if depthLimit > 250:
+                sys.exit("Depth Limit Reached!")
+            lastExpansion = 0
+            fringe.append(initialState)
+            depthLimit += 1
+            totalNodesCreated = 0
+            closedList = {}
+            continue
+
+        # IDDFS
+        current = fringe.pop()
+
+        # Check if we're in the goal state
+        if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
+            return current
+
+        if not checkClosedList(current, closedList):
+            nodeCount += 1
+            closedList[current.key] = current.depth
+            map(fringe.append, expandNode(current))
+
+
 #####
 
 # def uninformedSearch(initialNode, goalNode, fringe):
@@ -287,6 +315,9 @@ def main():
         if mode == "dfs":
             fringe = collections.deque()
             resultState = depthFirstSearch(fringe, initialState, goalState)
+        if mode == "iddfs":
+            fringe = collections.deque()
+            resultState = iterativeDeepeningDFS(fringe, initialState, goalState)
     else:
         sys.exit("Mode not supported!")
 
