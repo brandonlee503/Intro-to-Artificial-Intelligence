@@ -8,7 +8,6 @@ import heapq
 # Add references
 
 # Global Variables
-# TODO: Change these names
 totalNodesCreated  = 0
 totalExpandedNodes = 0
 maximumDepth       = 0
@@ -170,7 +169,7 @@ def breathFirstSearch(fringe, initialState, goalState):
         current = fringe.popleft()
 
         # Check if we're in the goal state
-        if (cuheuristict.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
+        if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
         if not checkClosedList(current, closedList):
@@ -196,7 +195,7 @@ def depthFirstSearch(fringe, initialState, goalState):
 
         if not checkClosedList(current, closedList):
             # Find better implementation
-            if current.depth > 200:
+            if current.depth > 400:#TODO: 200:
                 continue
             totalExpandedNodes += 1
             closedList[current.state] = current.depth
@@ -209,7 +208,7 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
     fringe.append(initialState)
     while True:
         if len(fringe) == 0:
-            if maximumDepth > 200:
+            if maximumDepth > 400:
                 sys.exit("Depth Limit Reached!")
             fringe.append(initialState)
             maximumDepth += 1
@@ -257,10 +256,10 @@ def aStarSearch(fringe, initialState, goalState):
 def aStarHeuristic(current, goalState):
     # Check boat bank
     if goalState.leftBank[2] == 1:
-        heuristic = (current.rightBank[0] + current.rightBank[1]) - 1
+        heuristic = (current.rightBank[0] + current.rightBank[1]) / 2
     else:
-        heuristic = (current.leftBank[0] + current.leftBank[1]) - 1
-    return hueristic
+        heuristic = (current.leftBank[0] + current.leftBank[1]) / 2
+    return heuristic
 
 # Trace through parents to find path of solution node
 def findSolutionPath(node):
@@ -274,12 +273,6 @@ def findSolutionPath(node):
             break
         current = current.parent
     return pathToSolution
-
-def printToFile(file, solutionPath):
-    f = open(file, 'w')
-    f.write(str(solutionPath))
-    f.write('\n')
-    f.close()
 
 def main():
 
@@ -300,11 +293,9 @@ def main():
     # Execute based on mode
     if mode in supportedModes:
         if mode == "astar":
-            # TODO: Change datastructure if possible
             fringe = PriorityQueue()
             resultState = aStarSearch(fringe, initialState, goalState)
         if mode == "bfs":
-            # TODO: Change datastructure if possible
             fringe = collections.deque()
             resultState = breathFirstSearch(fringe, initialState, goalState)
         if mode == "dfs":
@@ -319,6 +310,11 @@ def main():
     print "Total Expanded Nodes: {0}".format(totalExpandedNodes)
     print "Solution Path Length: {0}".format(len(findSolutionPath(resultState)))
     print findSolutionPath(resultState)
-    printToFile(fileOutput, findSolutionPath(resultState))
+
+    # Print the solution to a readable file
+    outFile = open(fileOutput, 'w')
+    outFile.write(str(findSolutionPath(resultState)))
+    outFile.write('\n')
+    outFile.close()
 
 main()
