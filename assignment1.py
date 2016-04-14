@@ -26,7 +26,7 @@ class Node():
         self.leftBank = leftBank
         self.rightBank = rightBank
         self.state = tuple(self.leftBank + self.rightBank)
-        
+
         self.depth = depth
         self.cost = cost
         self.parent = parent
@@ -54,12 +54,12 @@ class PriorityQueue:
 # TODO: Update class
 class Result():
     """An abstract entity representing a Result"""
-    def __init__(self, startBank, endBank, action, endBoatSide):
+    def __init__(self, startBank, endBank, action, boatEndBank):
         startBank[0] = startBank[0] - action[0]
         endBank[0] = endBank[0] + action[0]
         startBank[1] = startBank[1] - action[1]
         endBank[1] = endBank[1] + action[1]
-        if endBoatSide == "left":
+        if boatEndBank == "left":
             self.rightBank = startBank
             self.leftBank = endBank
             self.rightBank[2] = 0
@@ -157,7 +157,7 @@ def executeAction(action, node):
 
     return result
 
-# Based off of Graph Search
+# BFS Implmentation - based off of Graph Search
 def breathFirstSearch(fringe, initialState, goalState):
     global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
@@ -170,7 +170,7 @@ def breathFirstSearch(fringe, initialState, goalState):
         current = fringe.popleft()
 
         # Check if we're in the goal state
-        if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
+        if (cuheuristict.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
         if not checkClosedList(current, closedList):
@@ -178,6 +178,7 @@ def breathFirstSearch(fringe, initialState, goalState):
             closedList[current.state] = current.depth
             map(fringe.append, expandNode(current))
 
+# DFS Implmentation - based off of Graph Search
 def depthFirstSearch(fringe, initialState, goalState):
     global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
@@ -195,19 +196,20 @@ def depthFirstSearch(fringe, initialState, goalState):
 
         if not checkClosedList(current, closedList):
             # Find better implementation
-            if current.depth > 250:
+            if current.depth > 200:
                 continue
             totalExpandedNodes += 1
             closedList[current.state] = current.depth
             map(fringe.append, expandNode(current))
 
+# IDDFS Implmentation - based off of Graph Search
 def iterativeDeepeningDFS(fringe, initialState, goalState):
     global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
     fringe.append(initialState)
     while True:
         if len(fringe) == 0:
-            if maximumDepth > 250:
+            if maximumDepth > 200:
                 sys.exit("Depth Limit Reached!")
             fringe.append(initialState)
             maximumDepth += 1
@@ -228,6 +230,7 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
             # TODO: This represents reference.py correctly, maybe change it?
             map(fringe.append, expandNodeIDDFS(current))
 
+# A* Implmentation - based off of Graph Search
 def aStarSearch(fringe, initialState, goalState):
     global totalExpandedNodes, maximumDepth, numOfNodesCreated
     closedList = {}
@@ -247,16 +250,16 @@ def aStarSearch(fringe, initialState, goalState):
         if not checkClosedList(current, closedList):
             totalExpandedNodes += 1
             closedList[current.state] = current.depth
-            map(lambda i: fringe.push(i, i.cost + aStarHueristic(i, goalState)), expandNode(current))
+            map(lambda i: fringe.push(i, i.cost + aStarHeuristic(i, goalState)), expandNode(current))
 
-# Find hueristic to add with path cost
+# Find heuristic to add with path cost
 # http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#S7 TODO: Keep or discard?
-def aStarHueristic(current, goalState):
+def aStarHeuristic(current, goalState):
     # Check boat bank
     if goalState.leftBank[2] == 1:
-        hueristic = (current.rightBank[0] + current.rightBank[1]) - 1
+        heuristic = (current.rightBank[0] + current.rightBank[1]) - 1
     else:
-        hueristic = (current.leftBank[0] + current.leftBank[1]) - 1
+        heuristic = (current.leftBank[0] + current.leftBank[1]) - 1
     return hueristic
 
 # Trace through parents to find path of solution node
