@@ -26,13 +26,15 @@ class Node():
         self.leftBank = leftBank
         self.rightBank = rightBank
         self.state = tuple(self.leftBank + self.rightBank)
-
-        self.parent = parent
-        self.action = action
+        
         self.depth = depth
         self.cost = cost
+        self.parent = parent
+        self.action = action
 
 # TODO: Update class
+
+# https://www.safaribooksonline.com/library/view/python-cookbook-3rd/9781449357337/ch01s05.html
 class PriorityQueue:
     """An abstract entity representing a priority queue"""
     def __init__(self):
@@ -91,7 +93,7 @@ def expandNode(node):
         successorNodes.append(updatedNode)
     return successorNodes
 
-# Expand the current node
+# Expand the current node (IDDFS Version)
 def expandNodeIDDFS(node):
     successorNodes = []
     for result in checkSuccessorsIDDFS(node):
@@ -248,6 +250,7 @@ def aStarSearch(fringe, initialState, goalState):
             map(lambda i: fringe.push(i, i.cost + aStarHueristic(i, goalState)), expandNode(current))
 
 # Find hueristic to add with path cost
+# http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#S7 TODO: Keep or discard?
 def aStarHueristic(current, goalState):
     # Check boat bank
     if goalState.leftBank[2] == 1:
@@ -293,6 +296,10 @@ def main():
 
     # Execute based on mode
     if mode in supportedModes:
+        if mode == "astar":
+            # TODO: Change datastructure if possible
+            fringe = PriorityQueue()
+            resultState = aStarSearch(fringe, initialState, goalState)
         if mode == "bfs":
             # TODO: Change datastructure if possible
             fringe = collections.deque()
@@ -303,10 +310,6 @@ def main():
         if mode == "iddfs":
             fringe = collections.deque()
             resultState = iterativeDeepeningDFS(fringe, initialState, goalState)
-        if mode == "astar":
-            # TODO: Change datastructure if possible
-            fringe = PriorityQueue()
-            resultState = aStarSearch(fringe, initialState, goalState)
     else:
         sys.exit("Mode not supported!")
 
