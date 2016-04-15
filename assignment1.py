@@ -9,7 +9,7 @@ import heapq
 # Add helper functions x2
 # Restructure (top down and maybe more) x3
 # Add references x2
-# Change it up x3
+# Change it up x2
 
 # Global Variables
 totalNodesCreated  = 0
@@ -56,7 +56,6 @@ class Node():
         self.parent = parent
         self.action = action
 
-# x3
 class Result():
     """An abstract entity representing a result"""
     def __init__(self, startBank, endBank, action, boatEndBank):
