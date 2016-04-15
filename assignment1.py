@@ -5,19 +5,13 @@ import sys
 import collections
 import heapq
 
-# Rename x1
-# Add helper functions x2
-# Restructure (top down and maybe more) x3
-# Add references x2
-# Change it up x2
-
 # Global Variables
 totalNodesCreated  = 0
 totalExpandedNodes = 0
 maximumDepth       = 0
 
 # Actions a state may take in the form of [missionary, cannibal]
-possibleMoves = [[1,0],[2,0],[0,1],[1,1],[0,2]]
+possibleMoves  = [[1,0],[2,0],[0,1],[1,1],[0,2]]
 supportedModes = ["bfs", "dfs", "iddfs", "astar"]
 
 # https://www.safaribooksonline.com/library/view/python-cookbook-3rd/9781449357337/ch01s05.html
@@ -77,72 +71,56 @@ class Result():
             self.leftBank[2] = 0
         self.action = action
 
+def main():
+    # Get command line arguments
+    fileInitialState = sys.argv[1]
+    fileGoalState    = sys.argv[2]
+    mode             = sys.argv[3]
+    fileOutput       = sys.argv[4]
+
+    # File IO
+    initialStateData = getFileState(fileInitialState)
+    goalStateData = getFileState(fileGoalState)
+
+    # Create essential states
+    initialState = createNodeWithData(initialStateData)
+    goalState = createNodeWithData(goalStateData)
+
+    # Execute based on mode
+    if mode in supportedModes:
+        if mode == "astar":
+            fringe = PriorityQueue()
+            resultState = aStarSearch(fringe, initialState, goalState)
+        if mode == "bfs":
+            fringe = collections.deque()
+            resultState = breathFirstSearch(fringe, initialState, goalState)
+        if mode == "dfs":
+            fringe = collections.deque()
+            resultState = depthFirstSearch(fringe, initialState, goalState)
+        if mode == "iddfs":
+            fringe = collections.deque()
+            resultState = iterativeDeepeningDFS(fringe, initialState, goalState)
+    else:
+        sys.exit("Mode not supported!")
+
+    # Show user the results
+    printToUser(resultState)
+
+    # Print the solution to a readable file
+    outFile = open(fileOutput, 'w')
+    outFile.write(str(findSolutionPath(resultState)))
+    outFile.write('\n')
+    outFile.close()
+
 def getFileState(file):
     """Read test files for data"""
     with open(file) as theFile:
         stateData = theFile.readlines()
     return stateData
 
-def expandNode(node):
-    """Expand the current node"""
-    global possibleMoves
-    successorNodes = []
-
-    validAction = filter(lambda i: checkAction(i, node), possibleMoves)
-    expandedNodes = map(lambda j: executeAction(j, node), validAction)
-
-    for successor in expandedNodes:
-        updatedNode = Node(successor.leftBank, successor.rightBank, node.depth + 1, node.depth + 1, node, successor.action)
-        successorNodes.append(updatedNode)
-    return successorNodes
-
-def expandNodeIDDFS(node):
-    """Expand the current node (IDDFS Version)"""
-    global possibleMoves
-    successorNodes = []
-
-    if node.depth == maximumDepth:
-        expandedNodes = []
-    else:
-        validAction = filter(lambda i: checkAction(i, node), possibleMoves)
-        expandedNodes = map(lambda j: executeAction(j, node), validAction)
-
-    for successor in expandedNodes:
-        updatedNode = Node(successor.leftBank, successor.rightBank, node.depth + 1, node.depth + 1, node, successor.action)
-        successorNodes.append(updatedNode)
-    return successorNodes
-
-def checkAction(action, node):
-    """Check if action is valid within game"""
-    # Check which side boat is
-    if node.leftBank[2] == 1:
-        startBank = list(node.leftBank)
-        endBank = list(node.rightBank)
-    else:
-        startBank = list(node.rightBank)
-        endBank = list(node.leftBank)
-
-    # Perform action and check result
-    startBank[0] = startBank[0] - action[0]
-    endBank[0] = endBank[0] + action[0]
-    startBank[1] = startBank[1] - action[1]
-    endBank[1] = endBank[1] + action[1]
-
-    # Compare number of missionaires versus cannibals
-    if (startBank[0] < 0) or (startBank[1] < 0) or (endBank[0] < 0) or (endBank[1] < 0):
-        return False
-    elif ((startBank[0] == 0) or (startBank[0] >= startBank[1])) and (endBank[0] == 0 or (endBank[0] >= endBank[1])):
-        return True
-    else:
-        return False
-
-def executeAction(action, node):
-    """Perform the action and update state"""
-    if node.leftBank[2] == 1:
-        result = Result(list(node.leftBank), list(node.rightBank), action, "right")
-    else:
-        result = Result(list(node.rightBank), list(node.leftBank), action, "left")
-    return result
+def createNodeWithData(data):
+    """Builds a node object with given file data"""
+    return Node(map(int, data[0].strip('\n').split(',')), map(int, data[1].strip('\n').split(',')), 0, 0, None, None)
 
 def breathFirstSearch(fringe, initialState, goalState):
     """BFS Implmentation - Based off of Graph Search pseudocode"""
@@ -249,6 +227,67 @@ def aStarSearch(fringe, initialState, goalState):
             map(lambda i: fringe.push(i, i.cost + aStarHeuristic(i, goalState)), expandNode(current))
             totalExpandedNodes += 1
 
+def expandNode(node):
+    """Expand the current node"""
+    global possibleMoves
+    successorNodes = []
+
+    validAction = filter(lambda i: checkAction(i, node), possibleMoves)
+    expandedNodes = map(lambda j: executeAction(j, node), validAction)
+
+    for successor in expandedNodes:
+        updatedNode = Node(successor.leftBank, successor.rightBank, node.depth + 1, node.depth + 1, node, successor.action)
+        successorNodes.append(updatedNode)
+    return successorNodes
+
+def expandNodeIDDFS(node):
+    """Expand the current node (IDDFS Version)"""
+    global possibleMoves
+    successorNodes = []
+
+    if node.depth == maximumDepth:
+        expandedNodes = []
+    else:
+        validAction = filter(lambda i: checkAction(i, node), possibleMoves)
+        expandedNodes = map(lambda j: executeAction(j, node), validAction)
+
+    for successor in expandedNodes:
+        updatedNode = Node(successor.leftBank, successor.rightBank, node.depth + 1, node.depth + 1, node, successor.action)
+        successorNodes.append(updatedNode)
+    return successorNodes
+
+def checkAction(action, node):
+    """Check if action is valid within game"""
+    # Check which side boat is
+    if node.leftBank[2] == 1:
+        startBank = list(node.leftBank)
+        endBank = list(node.rightBank)
+    else:
+        startBank = list(node.rightBank)
+        endBank = list(node.leftBank)
+
+    # Perform action and check result
+    startBank[0] = startBank[0] - action[0]
+    endBank[0] = endBank[0] + action[0]
+    startBank[1] = startBank[1] - action[1]
+    endBank[1] = endBank[1] + action[1]
+
+    # Compare number of missionaires versus cannibals
+    if (startBank[0] < 0) or (startBank[1] < 0) or (endBank[0] < 0) or (endBank[1] < 0):
+        return False
+    elif ((startBank[0] == 0) or (startBank[0] >= startBank[1])) and (endBank[0] == 0 or (endBank[0] >= endBank[1])):
+        return True
+    else:
+        return False
+
+def executeAction(action, node):
+    """Perform the action and create result object"""
+    if node.leftBank[2] == 1:
+        result = Result(list(node.leftBank), list(node.rightBank), action, "right")
+    else:
+        result = Result(list(node.rightBank), list(node.leftBank), action, "left")
+    return result
+
 # http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#S7
 def aStarHeuristic(current, goalState):
     """Find heuristic to add with path cost, h(n) = (individuals at starting bank)/(boat size)"""
@@ -258,6 +297,12 @@ def aStarHeuristic(current, goalState):
     else:
         heuristic = (current.leftBank[0] + current.leftBank[1]) / 2
     return heuristic
+
+def printToUser(resultState):
+    """Print results to console"""
+    print "Total Expanded Nodes: {0}".format(totalExpandedNodes)
+    print "Solution Path Length: {0}".format(len(findSolutionPath(resultState)))
+    print findSolutionPath(resultState)
 
 # http://stackoverflow.com/questions/8922060/how-to-trace-the-path-in-a-breadth-first-search
 def findSolutionPath(node):
@@ -273,56 +318,4 @@ def findSolutionPath(node):
         current = current.parent
     return pathToSolution
 
-def printToUser(resultState):
-    """Print results to console"""
-    print "Total Expanded Nodes: {0}".format(totalExpandedNodes)
-    print "Solution Path Length: {0}".format(len(findSolutionPath(resultState)))
-    print findSolutionPath(resultState)
-
-def createNodeWithData(data):
-    return Node(map(int, data[0].strip('\n').split(',')), map(int, data[1].strip('\n').split(',')), 0, 0, None, None)
-
-def main():
-    # Get command line arguments
-    fileInitialState = sys.argv[1]
-    fileGoalState    = sys.argv[2]
-    mode             = sys.argv[3]
-    fileOutput       = sys.argv[4]
-
-    # File IO
-    initialStateData = getFileState(fileInitialState)
-    goalStateData = getFileState(fileGoalState)
-
-    # Create essential states
-    initialState = createNodeWithData(initialStateData)
-    goalState = createNodeWithData(goalStateData)
-
-    # Execute based on mode
-    if mode in supportedModes:
-        if mode == "astar":
-            fringe = PriorityQueue()
-            resultState = aStarSearch(fringe, initialState, goalState)
-        if mode == "bfs":
-            fringe = collections.deque()
-            resultState = breathFirstSearch(fringe, initialState, goalState)
-        if mode == "dfs":
-            fringe = collections.deque()
-            resultState = depthFirstSearch(fringe, initialState, goalState)
-        if mode == "iddfs":
-            fringe = collections.deque()
-            resultState = iterativeDeepeningDFS(fringe, initialState, goalState)
-    else:
-        sys.exit("Mode not supported!")
-
-    # Show user the results
-    printToUser(resultState)
-
-    # Print the solution to a readable file
-    outFile = open(fileOutput, 'w')
-    outFile.write(str(findSolutionPath(resultState)))
-    outFile.write('\n')
-    outFile.close()
-
 main()
-
-# TODO: Walk through one last time for each algorithm, restructre, then test
