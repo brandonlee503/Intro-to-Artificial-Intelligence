@@ -252,7 +252,7 @@ def aStarSearch(fringe, initialState, goalState):
 
 # http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#S7
 def aStarHeuristic(current, goalState):
-    """Find heuristic to add with path cost"""
+    """Find heuristic to add with path cost, h(n) = (individuals at starting bank)/(boat size)"""
     # Check boat bank
     if goalState.leftBank[2] == 1:
         heuristic = (current.rightBank[0] + current.rightBank[1]) / 2
