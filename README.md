@@ -5,6 +5,7 @@ A Cannibals and Missionaries Puzzle Solver with BFS, DFS, IDDFS, and A*.
 ## Usage
 
 Built with Python 2.7.10
+
 To run, see either testRun.sh or the examples displayed below:
 
 ```
