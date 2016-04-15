@@ -1,7 +1,6 @@
 # Brandon Lee
 # CS 331 Intro to Artificial Intelligence
 # Assignment 1 - Cannibals and Missionaries Puzzle
-# Below I have included references to links that I found useful during the implementation.
 import sys
 import collections
 import heapq
@@ -18,7 +17,7 @@ totalExpandedNodes = 0
 maximumDepth       = 0
 
 # Actions a state may take in the form of [missionary, cannibal]
-possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
+possibleMoves = [[1,0],[2,0],[0,1],[1,1],[0,2]]
 supportedModes = ["bfs", "dfs", "iddfs", "astar"]
 
 # https://www.safaribooksonline.com/library/view/python-cookbook-3rd/9781449357337/ch01s05.html
@@ -85,45 +84,34 @@ def getFileState(file):
         stateData = theFile.readlines()
     return stateData
 
-def checkClosedList(node, closedList):
-    """Check to see if current node is in the closed list"""
-    if node.state in closedList:
-        if node.depth >= closedList[node.state]:
-            return True
-    else:
-        return False
-
 def expandNode(node):
     """Expand the current node"""
+    global possibleMoves
     successorNodes = []
-    for result in checkSuccessors(node):
-        updatedNode = Node(result.leftBank, result.rightBank, node.depth + 1, node.depth + 1, node, result.action)
+
+    validAction = filter(lambda i: checkAction(i, node), possibleMoves)
+    expandedNodes = map(lambda j: executeAction(j, node), validAction)
+
+    for successor in expandedNodes:
+        updatedNode = Node(successor.leftBank, successor.rightBank, node.depth + 1, node.depth + 1, node, successor.action)
         successorNodes.append(updatedNode)
     return successorNodes
 
 def expandNodeIDDFS(node):
     """Expand the current node (IDDFS Version)"""
+    global possibleMoves
     successorNodes = []
-    for result in checkSuccessorsIDDFS(node):
-        updatedNode = Node(result.leftBank, result.rightBank, node.depth + 1, node.depth + 1, node, result.action)
+
+    if node.depth == maximumDepth:
+        expandedNodes = []
+    else:
+        validAction = filter(lambda i: checkAction(i, node), possibleMoves)
+        expandedNodes = map(lambda j: executeAction(j, node), validAction)
+
+    for successor in expandedNodes:
+        updatedNode = Node(successor.leftBank, successor.rightBank, node.depth + 1, node.depth + 1, node, successor.action)
         successorNodes.append(updatedNode)
     return successorNodes
-
-def checkSuccessors(node):
-    """Check all possible successors"""
-    global possibleActions
-    allowedActions = filter(lambda x: checkAction(x, node), possibleActions)
-    results = map(lambda y: executeAction(y, node), allowedActions)
-    return results
-
-def checkSuccessorsIDDFS(node):
-    """Checks all possible successors (IDDFS Version)"""
-    global possibleActions
-    if node.depth == maximumDepth:
-        return []
-    allowedActions = filter(lambda x: checkAction(x, node), possibleActions)
-    results = map(lambda y: executeAction(y, node), allowedActions)
-    return results
 
 def checkAction(action, node):
     """Check if action is valid within game"""
@@ -173,8 +161,10 @@ def breathFirstSearch(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
-        # Add to closed list and expand
-        if not checkClosedList(current, closedList):
+        # Check if in closed list and expand when necessary
+        if current.state in closedList and current.depth >= closedList[current.state]:
+            continue
+        else:
             closedList[current.state] = current.depth
             map(fringe.append, expandNode(current))
             totalExpandedNodes += 1
@@ -195,8 +185,10 @@ def depthFirstSearch(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
-        # Add to closed list and expand
-        if not checkClosedList(current, closedList):
+        # Check if in closed list and expand when necessary
+        if current.state in closedList and current.depth >= closedList[current.state]:
+            continue
+        else:
             if current.depth > 400:
                 continue
             closedList[current.state] = current.depth
@@ -225,15 +217,17 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
-        # Add to closed list and expand
-        if not checkClosedList(current, closedList):
+        # Check if in closed list and expand when necessary
+        if current.state in closedList and current.depth >= closedList[current.state]:
+            continue
+        else:
             closedList[current.state] = current.depth
             map(fringe.append, expandNodeIDDFS(current))
             totalExpandedNodes += 1
 
 def aStarSearch(fringe, initialState, goalState):
     """A* Implmentation - Based off of Graph Search pseudocode"""
-    global totalExpandedNodes, maximumDepth, numOfNodesCreated
+    global totalNodesCreated, totalExpandedNodes, maximumDepth
     closedList = {}
     fringe.push(initialState, initialState.cost)
 
@@ -248,12 +242,13 @@ def aStarSearch(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
-        # Add to closed list and expand
-        if not checkClosedList(current, closedList):
+        # Check if in closed list and expand when necessary
+        if current.state in closedList and current.depth >= closedList[current.state]:
+            continue
+        else:
             closedList[current.state] = current.depth
             map(lambda i: fringe.push(i, i.cost + aStarHeuristic(i, goalState)), expandNode(current))
             totalExpandedNodes += 1
-
 
 # http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#S7
 def aStarHeuristic(current, goalState):
@@ -330,3 +325,5 @@ def main():
     outFile.close()
 
 main()
+
+# TODO: Walk through one last time for each algorithm, restructre, then test
