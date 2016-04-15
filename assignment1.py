@@ -1,12 +1,16 @@
+# Brandon Lee
+# CS 331 Intro to Artificial Intelligence
+# Assignment 1 - Cannibals and Missionaries Puzzle
+# Below I have included references to links that I found useful during the implementation.
 import sys
 import collections
 import heapq
 
-# Rename
-# Add helper functions
-# Restructure (top down and maybe more)
-# Add references
-# Change it up
+# Rename x1
+# Add helper functions x2
+# Restructure (top down and maybe more) x3
+# Add references x2
+# Change it up x3
 
 # Global Variables
 totalNodesCreated  = 0
@@ -16,6 +20,23 @@ maximumDepth       = 0
 # Actions a state may take in the form of [missionary, cannibal]
 possibleActions = [[1,0],[2,0],[0,1],[1,1],[0,2]]
 supportedModes = ["bfs", "dfs", "iddfs", "astar"]
+
+# https://www.safaribooksonline.com/library/view/python-cookbook-3rd/9781449357337/ch01s05.html
+class PriorityQueue:
+    """An abstract entity representing a priority queue"""
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+
+    def __len__(self):
+        return len(self._queue)
+
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (priority, self._index, item))
+        self._index += 1
+
+    def pop(self):
+        return heapq.heappop(self._queue)[-1]
 
 class Node():
     """An abstract entity representing a single state"""
@@ -36,22 +57,6 @@ class Node():
         self.parent = parent
         self.action = action
 
-# https://www.safaribooksonline.com/library/view/python-cookbook-3rd/9781449357337/ch01s05.html
-class PriorityQueue:
-    """An abstract entity representing a priority queue"""
-    def __init__(self):
-        self._queue = []
-        self._index = 0
-
-    def __len__(self):
-        return len(self._queue)
-
-    def push(self, item, priority):
-        heapq.heappush(self._queue, (priority, self._index, item))
-        self._index += 1
-
-    def pop(self):
-        return heapq.heappop(self._queue)[-1]
 # x3
 class Result():
     """An abstract entity representing a result"""
@@ -168,6 +173,7 @@ def breathFirstSearch(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
+        # Add to closed list and expand
         if not checkClosedList(current, closedList):
             closedList[current.state] = current.depth
             map(fringe.append, expandNode(current))
@@ -189,6 +195,7 @@ def depthFirstSearch(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
+        # Add to closed list and expand
         if not checkClosedList(current, closedList):
             if current.depth > 400:
                 continue
@@ -205,10 +212,10 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
         if len(fringe) == 0:
             if maximumDepth > 400:
                 sys.exit("Depth Limit Reached!")
-            fringe.append(initialState)
+            closedList = {}
             maximumDepth += 1
             totalNodesCreated = 0
-            closedList = {}
+            fringe.append(initialState)
             continue
 
         # Remove from fringe
@@ -218,6 +225,7 @@ def iterativeDeepeningDFS(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
+        # Add to closed list and expand
         if not checkClosedList(current, closedList):
             closedList[current.state] = current.depth
             map(fringe.append, expandNodeIDDFS(current))
@@ -240,6 +248,7 @@ def aStarSearch(fringe, initialState, goalState):
         if (current.leftBank == goalState.leftBank) and (current.rightBank == goalState.rightBank):
             return current
 
+        # Add to closed list and expand
         if not checkClosedList(current, closedList):
             closedList[current.state] = current.depth
             map(lambda i: fringe.push(i, i.cost + aStarHeuristic(i, goalState)), expandNode(current))
@@ -256,6 +265,7 @@ def aStarHeuristic(current, goalState):
         heuristic = (current.leftBank[0] + current.leftBank[1]) / 2
     return heuristic
 
+# http://stackoverflow.com/questions/8922060/how-to-trace-the-path-in-a-breadth-first-search
 def findSolutionPath(node):
     """Trace through parents to find path of solution node"""
     pathToSolution = []
@@ -275,6 +285,9 @@ def printToUser(resultState):
     print "Solution Path Length: {0}".format(len(findSolutionPath(resultState)))
     print findSolutionPath(resultState)
 
+def createNodeWithData(data):
+    return Node(map(int, data[0].strip('\n').split(',')), map(int, data[1].strip('\n').split(',')), 0, 0, None, None)
+
 def main():
     # Get command line arguments
     fileInitialState = sys.argv[1]
@@ -287,8 +300,8 @@ def main():
     goalStateData = getFileState(fileGoalState)
 
     # Create essential states
-    initialState = Node(map(int, initialStateData[0].strip('\n').split(',')), map(int, initialStateData[1].strip('\n').split(',')), 0, 0, None, None)
-    goalState = Node(map(int, goalStateData[0].strip('\n').split(',')), map(int, goalStateData[1].strip('\n').split(',')), 0, 0, None, None)
+    initialState = createNodeWithData(initialStateData)
+    goalState = createNodeWithData(goalStateData)
 
     # Execute based on mode
     if mode in supportedModes:
