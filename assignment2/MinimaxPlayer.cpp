@@ -19,9 +19,10 @@ MinimaxPlayer::~MinimaxPlayer() {
 
 }
 
-void MinimaxPlayer::get_move(OthelloBoard* b, int& col, int& row) {
-    // To be filled in by you
+int MinimaxPlayer::cost(OthelloBoard *board) {
+	return board->count_score(board->get_p1_symbol()) - board->count_score(board->get_p2_symbol());
 }
+
 
 MinimaxPlayer* MinimaxPlayer::clone() {
 	MinimaxPlayer* result = new MinimaxPlayer(symbol);
