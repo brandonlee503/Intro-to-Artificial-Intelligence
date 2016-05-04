@@ -79,6 +79,37 @@ int MinimaxPlayer::maximumValue(int &row, int &column, char playerSymbol, Othell
 	return theMax;
 }
 
+int MinimaxPlayer::minimumValue(int &row, int &column, char playerSymbol, OthelloBoard *board) {
+	vector<OthelloBoard*> boardVector;
+	int minimumRow = 0;
+	int minimumColumn = 0;
+	int theMin = 32767;
+
+	if (playerSymbol == 'X') {
+		boardVector = evaluatePossibleStates('X', board);
+	}
+
+	if (playerSymbol == 'O') {
+		boardVector = evaluatePossibleStates('O', board);
+	}
+
+	if (boardVector.size() == 0) {
+		return cost(board);
+	}
+
+	for (int i = 0; i < boardVector.size(); i++) {
+		if (minimumValue(row, column, playerSymbol, boardVector[i]) > theMin) {
+			minimumRow = boardVector[i]->getRow();
+			minimumColumn = boardVector[i]->getColumn();
+			theMin = minimumValue(row, column, playerSymbol, boardVector[i]);
+		}
+	}
+
+	row = minimumRow;
+	column = minimumRow;
+	return theMin;
+}
+
 MinimaxPlayer* MinimaxPlayer::clone() {
 	MinimaxPlayer* result = new MinimaxPlayer(symbol);
 	return result;
