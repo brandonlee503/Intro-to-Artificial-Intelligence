@@ -19,12 +19,18 @@ MinimaxPlayer::~MinimaxPlayer() {
 
 }
 
-int MinimaxPlayer::cost(OthelloBoard *board) {
+// TODO: Check whats up with this function to cause my AI to suck
+/**
+ * Evaluates the cost of
+ * @param  board [description]
+ * @return       [description]
+ */
+int MinimaxPlayer::getUtility(OthelloBoard *board) {
 	return board->count_score(board->get_p1_symbol()) - board->count_score(board->get_p2_symbol());
 }
 
 // Evaluate the moves possible moves remaining in the game...
-vector<OthelloBoard*> MinimaxPlayer::evaluatePossibleStates(char playerSymbol, OthelloBoard *board) {
+vector<OthelloBoard*> MinimaxPlayer::getSuccessors(char playerSymbol, OthelloBoard *board) {
 	int stateCounter = 0;
 	int boardDimensions = 4;
 	vector<OthelloBoard*> boardVector;
@@ -55,15 +61,15 @@ int MinimaxPlayer::maximumValue(int &row, int &column, char playerSymbol, Othell
 	int theMax = -32767;
 
 	if (playerSymbol == 'X') {
-		boardVector = evaluatePossibleStates('X', board);
+		boardVector = getSuccessors('X', board);
 	}
 
 	if (playerSymbol == 'O') {
-		boardVector = evaluatePossibleStates('O', board);
+		boardVector = getSuccessors('O', board);
 	}
 
 	if (boardVector.size() == 0) {
-		return cost(board);
+		return getUtility(board);
 	}
 
 	for (int i = 0; i < boardVector.size(); i++) {
@@ -86,15 +92,15 @@ int MinimaxPlayer::minimumValue(int &row, int &column, char playerSymbol, Othell
 	int theMin = 32767;
 
 	if (playerSymbol == 'X') {
-		boardVector = evaluatePossibleStates('X', board);
+		boardVector = getSuccessors('X', board);
 	}
 
 	if (playerSymbol == 'O') {
-		boardVector = evaluatePossibleStates('O', board);
+		boardVector = getSuccessors('O', board);
 	}
 
 	if (boardVector.size() == 0) {
-		return cost(board);
+		return getUtility(board);
 	}
 
 	for (int i = 0; i < boardVector.size(); i++) {

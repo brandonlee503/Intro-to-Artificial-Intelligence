@@ -29,8 +29,8 @@ public:
 	 */
 	virtual ~MinimaxPlayer();
 
-	int cost(OthelloBoard *board);
-	std::vector<OthelloBoard*> evaluatePossibleStates(char playerSymbol, OthelloBoard *board);
+	int getUtility(OthelloBoard *board);
+	std::vector<OthelloBoard*> getSuccessors(char playerSymbol, OthelloBoard *board);
 	int maximumValue(int &row, int &column, char playerSymbol, OthelloBoard *board);
 	int minimumValue(int &row, int &column, char playerSymbol, OthelloBoard *board);
 
