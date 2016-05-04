@@ -104,6 +104,12 @@ public:
      */
     char get_p2_symbol() { return p2_symbol; }
 
+	int getRow() { return row; }
+	int getColumn() { return column; }
+
+	int setRow(int i) { row = i; }
+	int setColumn(int i) { column = i; }
+
 private:
 
     /** The symbol for Player 1's pieces */
@@ -111,6 +117,8 @@ private:
 
     /** The symbol for Player 2's pieces */
     char p2_symbol;
+
+	int row, column;
 
     /**
      * @param col The column of the starting point
