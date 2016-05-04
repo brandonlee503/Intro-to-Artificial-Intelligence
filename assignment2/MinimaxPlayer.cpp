@@ -19,17 +19,21 @@ MinimaxPlayer::~MinimaxPlayer() {
 
 }
 
-// TODO: Check whats up with this function to cause my AI to suck
 /**
- * Evaluates the cost of
- * @param  board [description]
- * @return       [description]
+ * Evaluates non terminal nodes, essentially check the value of a terminal state
+ * @param board   The current game state
+ * @return        Utility
  */
 int MinimaxPlayer::getUtility(OthelloBoard *board) {
 	return board->count_score(board->get_p1_symbol()) - board->count_score(board->get_p2_symbol());
 }
 
-// Evaluate the moves possible moves remaining in the game...
+/**
+ * Evaluate the moves possible moves remaining in the game...
+ * @param playerSymbol   Player symbol character
+ * @param board			 The current game state
+ * @return 				 List of successor game states
+ */
 vector<OthelloBoard*> MinimaxPlayer::getSuccessors(char playerSymbol, OthelloBoard *board) {
 	int stateCounter = 0;
 	int boardDimensions = 4;
@@ -54,6 +58,14 @@ vector<OthelloBoard*> MinimaxPlayer::getSuccessors(char playerSymbol, OthelloBoa
 	return boardVector;
 }
 
+/**
+ * Use successor function to generate all possible future states and return those with the best maximum value.
+ * @param  row          The row
+ * @param  column       The column
+ * @param  playerSymbol Player piece symbol
+ * @param  board        Game state
+ * @return              Maximized value
+ */
 int MinimaxPlayer::maximumValue(int &row, int &column, char playerSymbol, OthelloBoard *board) {
 	vector<OthelloBoard*> boardVector;
 	int maximumRow = 0;
@@ -85,6 +97,14 @@ int MinimaxPlayer::maximumValue(int &row, int &column, char playerSymbol, Othell
 	return theMax;
 }
 
+/**
+ * Use successor function to generate all possible future states and return those with the best minimum value.
+ * @param  row          The row
+ * @param  column       The column
+ * @param  playerSymbol Player piece symbol
+ * @param  board        Game state
+ * @return              Maximized value
+ */
 int MinimaxPlayer::minimumValue(int &row, int &column, char playerSymbol, OthelloBoard *board) {
 	vector<OthelloBoard*> boardVector;
 	int minimumRow = 0;
@@ -116,7 +136,12 @@ int MinimaxPlayer::minimumValue(int &row, int &column, char playerSymbol, Othell
 	return theMin;
 }
 
-// Move to top if possible
+/**
+ * Determine player and initialize Minimax Algorithm
+ * @param b   Game state
+ * @param col The column
+ * @param row The row
+ */
 void MinimaxPlayer::get_move(OthelloBoard *b, int &col, int &row) {
 	if (symbol == b->get_p1_symbol()) {
 		maximumValue(row, col, 'X', b);
