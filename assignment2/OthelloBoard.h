@@ -107,8 +107,8 @@ public:
 	int getRow() { return row; }
 	int getColumn() { return column; }
 
-	int setRow(int i) { row = i; }
-	int setColumn(int i) { column = i; }
+	void setRow(int i) { row = i; }
+	void setColumn(int i) { column = i; }
 
 private:
 
