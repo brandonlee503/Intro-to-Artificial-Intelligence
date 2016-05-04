@@ -35,9 +35,9 @@ int MinimaxPlayer::getUtility(OthelloBoard *board) {
  * @return 				 List of successor game states
  */
 vector<OthelloBoard*> MinimaxPlayer::getSuccessors(char playerSymbol, OthelloBoard *board) {
-	int stateCounter = 0;
-	int boardDimensions = 4;
 	vector<OthelloBoard*> boardVector;
+	int stateCounter    = 0;
+	int boardDimensions = 4;
 
 	// Check every spot in the 2D array
 	for (int i = 0; i < boardDimensions; i++) {
@@ -68,9 +68,9 @@ vector<OthelloBoard*> MinimaxPlayer::getSuccessors(char playerSymbol, OthelloBoa
  */
 int MinimaxPlayer::maximumValue(int &row, int &column, char playerSymbol, OthelloBoard *board) {
 	vector<OthelloBoard*> boardVector;
-	int maximumRow = 0;
+	int maximumRow    = 0;
 	int maximumColumn = 0;
-	int theMax = -32767;
+	int theMax        = -32767;
 
 	if (playerSymbol == 'X') {
 		boardVector = getSuccessors('X', board);
@@ -107,9 +107,9 @@ int MinimaxPlayer::maximumValue(int &row, int &column, char playerSymbol, Othell
  */
 int MinimaxPlayer::minimumValue(int &row, int &column, char playerSymbol, OthelloBoard *board) {
 	vector<OthelloBoard*> boardVector;
-	int minimumRow = 0;
+	int minimumRow    = 0;
 	int minimumColumn = 0;
-	int theMin = 32767;
+	int theMin        = 32767;
 
 	if (playerSymbol == 'X') {
 		boardVector = getSuccessors('X', board);
