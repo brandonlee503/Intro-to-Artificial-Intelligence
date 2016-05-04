@@ -104,10 +104,28 @@ public:
      */
     char get_p2_symbol() { return p2_symbol; }
 
+	/**
+	 * @return Row attribute
+	 * Returns the row for board
+	 */
 	int getRow() { return row; }
+
+	/**
+	 * @return Column attribute
+	 * Returns the column for board
+	 */
 	int getColumn() { return column; }
 
+	/**
+	 * @param i Row integer to be updated
+	 * Setter function to set row attribute
+	 */
 	void setRow(int i) { row = i; }
+
+	/**
+	 * @param i Column integer to be updated
+	 * Setter function to set column attribute
+	 */
 	void setColumn(int i) { column = i; }
 
 private:
