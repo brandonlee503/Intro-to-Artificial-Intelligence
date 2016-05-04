@@ -110,6 +110,15 @@ int MinimaxPlayer::minimumValue(int &row, int &column, char playerSymbol, Othell
 	return theMin;
 }
 
+// Move to top if possible
+void MinimaxPlayer::get_move(OthelloBoard *b, int &col, int &row) {
+	if (symbol == b->get_p1_symbol()) {
+		maximumValue(row, col, 'X', b);
+	} else if (symbol == b->get_p2_symbol()) {
+		maximumValue(row, col, 'O', b);
+	}
+}
+
 MinimaxPlayer* MinimaxPlayer::clone() {
 	MinimaxPlayer* result = new MinimaxPlayer(symbol);
 	return result;
