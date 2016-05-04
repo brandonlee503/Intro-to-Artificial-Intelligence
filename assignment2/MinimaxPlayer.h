@@ -29,6 +29,11 @@ public:
 	 */
 	virtual ~MinimaxPlayer();
 
+	int cost(OthelloBoard *board);
+	std::vector<OthelloBoard*> evaluatePossibleStates(char playerSymbol, OthelloBoard *board);
+	int maximumValue(int &row, int &column, char playerSymbol, OthelloBoard *board);
+	int minimumValue(int &row, int &column, char playerSymbol, OthelloBoard *board);
+
 	/**
 	 * @param b The board object for the current state of the board
 	 * @param col Holds the return value for the column of the move
